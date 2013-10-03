@@ -14,9 +14,14 @@ class FlumeHandler(logging.Handler):
         self.fields = fields
 
     def emit(self, record):
-        evt = FlumeEventServer(host=self.host, port=self.port)
-        pri = FlumeEventServer.PRIORITY[record.levelname.upper()]
-        dt = int(time.time() * 1000)
-        ns = datetime.now().microsecond * 1000
-        # record.message is the log message
-        evt.append(pri, self.format(record), socket.gethostname(), dt, ns, fields=self.fields)
+        try:
+            evt = FlumeEventServer(host=self.host, port=self.port)
+            pri = FlumeEventServer.PRIORITY[record.levelname.upper()]
+            dt = int(time.time() * 1000)
+            ns = datetime.now().microsecond * 1000
+            # record.message is the log message
+            evt.append(pri, self.format(record), socket.gethostname(), dt, ns, fields=self.fields)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
