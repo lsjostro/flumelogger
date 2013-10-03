@@ -9,8 +9,8 @@ from flumelogger.flume.ttypes import ThriftFlumeEvent, RawEvent
 
 class FlumeEventServer(object):
     PRIORITY = { "FATAL"   : 0,
+                 "CRITICAL": 0,
                  "ERROR"   : 1,
-                 "CRITICAL": 1,
                  "WARNING" : 2,
                  "INFO"    : 3,
                  "DEBUG"   : 4,
