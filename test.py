@@ -8,12 +8,11 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("test")
 
 # and finally we add the handler to the logging object
-logger.addHandler(handler.FlumeHandler(host='elastic01.horisont.svenskaspel.se',
-                                       fields={'application': 'myTestApp' ,'tpns': 'itp1'}))
+logger.addHandler(handler.FlumeHandler(fields={'application': 'myTestApp' ,'somefield': 'foobar'}))
 
 # And finally a test
-logger.debug('kingen debug')
-logger.info('kingen info')
-logger.warning('kingen warn')
-logger.error('kingen error')
-logger.critical('kingen crit')
+logger.debug('Hello debug')
+logger.info('Hello info')
+logger.warning('Hello warn')
+logger.error('Hello error')
+logger.critical('Hello critical')
