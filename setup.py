@@ -8,7 +8,7 @@ setup(
     description = 'Flume logging handler for sending log events to Flume',
     author = 'Lars Sjostrom',
     author_email = 'lars@radicore.se',
-    url = 'http://github.com/lsjostro/flumehandler',
+    url = 'http://github.com/lsjostro/flumelogger',
     packages = find_packages(),
     classifiers = [
         'Intended Audience :: Developers',
