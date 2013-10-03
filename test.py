@@ -4,12 +4,12 @@ import logging
 from flumelogger import handler
 
 # Create a logging object (after configuring logging)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("test")
 
 # and finally we add the handler to the logging object
 logger.addHandler(handler.FlumeHandler(host='elastic01.horisont.svenskaspel.se',
-                                       fields={"application": "myTestApp" ,"tpns": "itp1"}))
+                                       fields={'application': 'myTestApp' ,'tpns': 'itp1'}))
 
 # And finally a test
 logger.debug('kingen debug')
