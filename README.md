@@ -3,9 +3,9 @@ flumelogger
 
 Python library for sending log events to flume.
 
-### Requirements
+### Installation
 
-  * pip install thrift
+  * pip install flumelogger
 
 ### Usage
 
