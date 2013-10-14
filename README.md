@@ -14,7 +14,7 @@ Python library for sending log events to flume.
 >>> from flumelogger import handler
 
 >>> fh = handler.FlumeHandler(host='my-flume-agent.example.com', port=9090, 
-...                           fields={'application': 'Skyline.Analyzer'})
+...                           headers={'application': 'Skyline.Analyzer'})
 >>> logger = logging.getLogger("AnalyzerLog")
 >>> logger.setLevel(logging.DEBUG)
 >>> logger.addHandler(fh)

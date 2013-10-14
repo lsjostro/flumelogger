@@ -18,6 +18,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     install_requires = [
-        'thrift',
+        'thrift >= 0.9.0',
     ],
 )
