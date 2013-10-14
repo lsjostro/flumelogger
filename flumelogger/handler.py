@@ -1,7 +1,5 @@
-import logging
-import time
 import socket
-from datetime import datetime
+import logging
 from flumelogger.eventserver import FlumeEventServer
 
 class FlumeHandler(logging.Handler):
