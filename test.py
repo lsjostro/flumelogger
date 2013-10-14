@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("test")
 
 # and finally we add the handler to the logging object
-logger.addHandler(handler.FlumeHandler(fields={'application': 'myTestApp' ,'somefield': 'foobar'}))
+logger.addHandler(handler.FlumeHandler(headers={'application': 'myTestApp' ,'somefield': 'foobar'}))
 
 # And finally a test
 logger.debug('Hello debug')

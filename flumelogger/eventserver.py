@@ -3,9 +3,9 @@
 from thrift.transport import TTransport
 from thrift.transport import TSocket
 from thrift.transport import THttpClient
-from thrift.protocol import TBinaryProtocol
-from flumelogger.flume import ThriftFlumeEventServer
-from flumelogger.flume.ttypes import ThriftFlumeEvent, RawEvent
+from thrift.protocol import TCompactProtocol
+from flumelogger.flumeng import ThriftSourceProtocol
+from flumelogger.flumeng.ttypes import ThriftFlumeEvent
 
 class FlumeEventServer(object):
     PRIORITY = { "FATAL"   : 0,
@@ -16,37 +16,21 @@ class FlumeEventServer(object):
                  "DEBUG"   : 4,
                  "TRACE"   : 5 }
 
-    def __init__(self, host="localhost", port=35873):
+    def __init__(self, host="localhost", port=9090):
         self.socket = TSocket.TSocket(host, port)
-        # transport = TTransport.TFramedTransport(socket)
-        self.transport = TTransport.TBufferedTransport(self.socket)
-        self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
-        self.client = ThriftFlumeEventServer.Client(self.protocol)
+        self.socket._timeout = 1000
+        self.transport = TTransport.TFramedTransport(self.socket)
+        self.protocol = TCompactProtocol.TCompactProtocol(self.transport)
+        self.client = ThriftSourceProtocol.Client(self.protocol)
         self.transport.open()
 
-    def append(self, priority, body, host, timestamp, nanos, fields):
+    def append(self, headers, body):
         event = ThriftFlumeEvent(
-            timestamp = timestamp,
-            priority = priority,
+            headers = headers,
             body = body,
-            host = host,
-            nanos = nanos,
-            fields = fields
         )
+        print event
         self.client.append(event)
 
-    def raw_append(self, event):
-        rawevent = RawEvent(event)
-        self.client.rawAppend(event)
-
-    def acked_append(self, priority, body, host, timestamp, nanos, fields):
-        event = ThriftFlumeEvent(
-            timestamp = timestamp,
-            priority = priority,
-            body = body,
-            host = host,
-            nanos = nanos,
-            fields = fields
-        )
-        status = self.client.ackedAppend(event)
-        return status
+    def close(self):
+        self.transport.close()
