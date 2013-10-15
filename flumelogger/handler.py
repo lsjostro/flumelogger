@@ -10,8 +10,8 @@ class FlumeHandler(logging.Handler):
         self.host = host
         self.port = port
         self.headers = headers
-        if not self.headers.has_key('source_host'):
-            self.headers['source_host'] = socket.gethostname()
+        if not self.headers.has_key('host'):
+            self.headers['host'] = socket.gethostname()
 
     def emit(self, record):
         try:
