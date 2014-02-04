@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # test.py
 import logging
-from flumelogger import handler
+from flumelogger.handler import FlumeHandler
 
 # Create a logging object (after configuring logging)
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("test")
 
 # and finally we add the handler to the logging object
-logger.addHandler(handler.FlumeHandler(type='og', headers={'application': 'myTestApp' ,'somefield': 'foobar'}))
+logger.addHandler(FlumeHandler(host='localhost', port=9090, type='og',
+                               headers={'application': 'myTestApp' ,'somefield': 'foobar'}))
 
 # And finally a test
 logger.debug('Hello debug')
@@ -19,3 +20,4 @@ logger.critical('Hello critical')
 # Send as a dict (override headers)
 logger.info({'message':'Hello dict info','application': 'myTestApp2','tag': 'testing'})
 logger.warning({'message':'Hello dict warning','application': 'myTestApp3','tag': 'testing2'})
+logger.error({'message':'Hello dict error (clear headers)'})

@@ -52,7 +52,6 @@ class FlumeHandler(logging.Handler):
     def emit(self, record):
         try:
             self.body = self.format(record)
-
             try:
                 msg = eval(self.body)
             except SyntaxError:
@@ -72,7 +71,10 @@ class FlumeHandler(logging.Handler):
 
             event = { 'ng': self.event_ng,
                       'og': self.event_og }
-            event[self.type]()
+            try:
+                event[self.type]()
+            except KeyError:
+                raise Exception('Wrong flume type specified')
 
             # record is the log message
             self.eventserver.append(self.event)

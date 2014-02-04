@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from thrift import Thrift
 from thrift.transport import TTransport
 from thrift.transport import TSocket
 from thrift.protocol import TCompactProtocol, TBinaryProtocol
@@ -11,33 +12,25 @@ class FlumeEventServer(object):
         self.host = host
         self.port = port
         self.type = type
-        self.client = None
 
     def connect(self):
+        socket = TSocket.TSocket(self.host, self.port)
+        socket._timeout = 1000
         if self.type == 'ng':
-            self.socket = TSocket.TSocket(self.host, self.port)
-            self.socket._timeout = 1000
-            self.transport = TTransport.TFramedTransport(self.socket)
-            self.protocol = TCompactProtocol.TCompactProtocol(self.transport)
-            self.client = ThriftSourceProtocol.Client(self.protocol)
+            self.transport = TTransport.TFramedTransport(socket)
+            protocol = TCompactProtocol.TCompactProtocol(self.transport)
+            self.client = ThriftSourceProtocol.Client(protocol)
         elif self.type == 'og':
-            self.socket = TSocket.TSocket(self.host, self.port)
-            self.socket._timeout = 1000
-            self.transport = TTransport.TBufferedTransport(self.socket)
-            self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
-            self.client = ThriftFlumeEventServer.Client(self.protocol)
-        else:
-            raise
+            self.transport = TTransport.TBufferedTransport(socket)
+            protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
+            self.client = ThriftFlumeEventServer.Client(protocol)
         self.transport.open()
 
     def append(self, event):
-        if not self.client:
-            self.connect()
         try:
+            self.connect()
             self.client.append(event)
-        except:
-            self.close()
-
-    def close(self):
-        self.client = None
-        self.transport.close()
+        except Thrift.TException, tx:
+            print 'Thrift: %s' % tx.message
+        finally:
+            self.transport.close()
