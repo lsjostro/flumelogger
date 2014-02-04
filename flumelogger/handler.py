@@ -27,8 +27,8 @@ class FlumeHandler(logging.Handler):
 
     def event_ng(self):
         self.event = ThriftFlumeNGEvent(
-            body = self.body,
-            headers = self.headers
+            headers = self.headers,
+            body = self.body
         )
 
     def event_og(self):

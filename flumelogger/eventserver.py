@@ -31,10 +31,6 @@ class FlumeEventServer(object):
         self.transport.open()
 
     def append(self, event):
-        #event = ThriftFlumeEvent(
-        #    headers = headers,
-        #    body = body,
-        #)
         if not self.client:
             self.connect()
         try:
