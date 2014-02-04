@@ -76,7 +76,7 @@ class FlumeHandler(logging.Handler):
             except KeyError:
                 raise Exception('Wrong flume type specified')
 
-            # record is the log message
+            # send event
             self.eventserver.append(self.event)
 
         except (KeyboardInterrupt, SystemExit):
