@@ -32,13 +32,14 @@ class FlumeHandler(logging.Handler):
         )
 
     def event_og(self):
-        pri = PRIORITY[self.headers['pri']]
+        fields = self.headers.copy()
+        pri = PRIORITY[fields['pri']]
         dt = int(time.time() * 1000)
         ns = datetime.now().microsecond * 1000
-        host = self.headers['host']
+        host = fields['host']
 
-        del self.headers['pri']
-        del self.headers['host']
+        del fields['pri']
+        del fields['host']
 
         self.event = ThriftFlumeOGEvent(
             timestamp = dt,
@@ -46,7 +47,7 @@ class FlumeHandler(logging.Handler):
             body = self.body,
             host = host,
             nanos = ns,
-            fields = self.headers
+            fields = fields
         )
 
     def emit(self, record):
@@ -54,7 +55,7 @@ class FlumeHandler(logging.Handler):
             self.body = self.format(record)
             try:
                 msg = eval(self.body)
-            except SyntaxError:
+            except:
                 msg = None
 
             if isinstance(msg, dict):
