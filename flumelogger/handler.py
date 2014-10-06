@@ -54,7 +54,6 @@ class FlumeHandler(logging.Handler):
     def emit(self, record):
         try:
             self.body = self.format(record)
-            print 'am here', self.body
             try:
                 msg = ast.literal_eval(self.body)
             except:
