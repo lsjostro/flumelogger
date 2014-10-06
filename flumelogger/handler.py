@@ -1,6 +1,7 @@
 import socket
 import logging
 import time
+import ast
 from datetime import datetime
 from flumelogger.eventserver import FlumeEventServer
 from flumelogger.flumeng.ttypes import ThriftFlumeEvent as ThriftFlumeNGEvent
@@ -53,8 +54,9 @@ class FlumeHandler(logging.Handler):
     def emit(self, record):
         try:
             self.body = self.format(record)
+            print 'am here', self.body
             try:
-                msg = eval(self.body)
+                msg = ast.literal_eval(self.body)
             except:
                 msg = None
 
