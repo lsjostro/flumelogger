@@ -12,6 +12,8 @@ class FlumeEventServer(object):
         self.host = host
         self.port = port
         self.type = type
+        self.transport = None
+        self.client = None
 
     def connect(self):
         socket = TSocket.TSocket(self.host, self.port)
@@ -28,9 +30,11 @@ class FlumeEventServer(object):
 
     def append(self, event):
         try:
-            self.connect()
+            if self.client is None:
+                self.connect()
+
             self.client.append(event)
-        except Thrift.TException, tx:
-            print 'Thrift: %s' % tx.message
-        finally:
+        except Exception, tx:
+            print 'Thrift: %s' % tx
+            self.client = None
             self.transport.close()
