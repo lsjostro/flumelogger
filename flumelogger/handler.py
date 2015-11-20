@@ -33,10 +33,10 @@ class FlumeHandler(logging.Handler):
                                             port=self.port,
                                             type=self.type)
 
-    def event_ng(self, headers):
-        self.event = ThriftFlumeNGEvent(headers=headers, body=self.body)
+    def event_ng(self, body, headers):
+        return ThriftFlumeNGEvent(headers=headers, body=body)
 
-    def event_og(self, fields):
+    def event_og(self, body, fields):
         pri = PRIORITY[fields['pri']]
         dt = int(time.time() * 1000)
         ns = datetime.now().microsecond * 1000
@@ -45,40 +45,74 @@ class FlumeHandler(logging.Handler):
         del fields['pri']
         del fields['host']
 
-        self.event = ThriftFlumeOGEvent(timestamp=dt,
-                                        priority=pri,
-                                        body=self.body,
-                                        host=host,
-                                        nanos=ns,
-                                        fields=fields)
+        return ThriftFlumeOGEvent(timestamp=dt,
+                                  priority=pri,
+                                  body=body,
+                                  host=host,
+                                  nanos=ns,
+                                  fields=fields)
+
+    def parse_record(self, record):
+        body = self.format(record)
+        headers = self.headers.copy()
+        try:
+            msg = ast.literal_eval(body)
+        except:
+            msg = None
+        if isinstance(msg, dict):
+            if 'message' in msg:
+                body = msg['message']
+                del msg['message']
+            else:
+                body = ""
+            headers.update(msg)
+        headers['pri'] = record.levelname.upper()
+        return body, headers
 
     def emit(self, record):
+        if isinstance(record.msg, list):
+            self.emit_many(record)
+        else:
+            self.emit_one(record)
+
+    def emit_one(self, record):
         try:
-            self.body = self.format(record)
-            try:
-                msg = ast.literal_eval(self.body)
-            except:
-                msg = None
-
-            headers = self.headers.copy()
-            if isinstance(msg, dict):
-                if 'message' in msg:
-                    self.body = msg['message']
-                    del msg['message']
-                else:
-                    self.body = ""
-                headers.update(msg)
-
             event = {'ng': self.event_ng, 'og': self.event_og}
-            headers['pri'] = record.levelname.upper()
+            body, headers = self.parse_record(record)
             try:
-                event[self.type](headers)
+                tevent = event[self.type](body, headers)
             except KeyError:
                 raise Exception('Wrong flume type specified')
 
             # send event
-            self.eventserver.append(self.event)
+            self.eventserver.append(tevent)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
 
+    def emit_many(self, records):
+        try:
+            events = []
+            for obj in records.msg:
+                record = logging.LogRecord(name=records.name,
+                                           level=records.levelno,
+                                           pathname=records.pathname,
+                                           lineno=records.lineno,
+                                           msg=obj,
+                                           args=records.args,
+                                           exc_info=records.exc_info)
+                event = {'ng': self.event_ng, 'og': self.event_og}
+                body, headers = self.parse_record(record)
+                try:
+                    tevent = event[self.type](body, headers)
+                except KeyError:
+                    raise Exception('Wrong flume type specified')
+                else:
+                    events.append(tevent)
+
+            # send events
+            self.eventserver.append_batch(events)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:

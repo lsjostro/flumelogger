@@ -34,6 +34,17 @@ class FlumeEventServer(object):
                 self.connect()
 
             self.client.append(event)
+        except KeyError, tx:
+            self.client = None
+            self.transport.close()
+            raise Exception('Thrift: %s' % tx)
+
+    def append_batch(self, events):
+        try:
+            if self.client is None:
+                self.connect()
+
+            self.client.appendBatch(events)
         except Exception, tx:
             self.client = None
             self.transport.close()
