@@ -7,13 +7,14 @@ from flumelogger.eventserver import FlumeEventServer
 from flumelogger.flumeng.ttypes import ThriftFlumeEvent as ThriftFlumeNGEvent
 from flumelogger.flumeog.ttypes import ThriftFlumeEvent as ThriftFlumeOGEvent
 
-PRIORITY = { "FATAL"   : 0,
-             "CRITICAL": 0,
-             "ERROR"   : 1,
-             "WARNING" : 2,
-             "INFO"    : 3,
-             "DEBUG"   : 4,
-             "TRACE"   : 5 }
+PRIORITY = {"FATAL": 0,
+            "CRITICAL": 0,
+            "ERROR": 1,
+            "WARNING": 2,
+            "INFO": 3,
+            "DEBUG": 4,
+            "TRACE": 5}
+
 
 class FlumeHandler(logging.Handler):
     def __init__(self, host="localhost", port=9090, type='ng', headers={}):
@@ -28,13 +29,12 @@ class FlumeHandler(logging.Handler):
         self.port = port
         self.type = type
         self.headers = headers
-        self.eventserver = FlumeEventServer(host=self.host, port=self.port, type=self.type)
+        self.eventserver = FlumeEventServer(host=self.host,
+                                            port=self.port,
+                                            type=self.type)
 
     def event_ng(self, headers):
-        self.event = ThriftFlumeNGEvent(
-            headers = headers,
-            body = self.body
-        )
+        self.event = ThriftFlumeNGEvent(headers=headers, body=self.body)
 
     def event_og(self, fields):
         pri = PRIORITY[fields['pri']]
@@ -45,14 +45,12 @@ class FlumeHandler(logging.Handler):
         del fields['pri']
         del fields['host']
 
-        self.event = ThriftFlumeOGEvent(
-            timestamp = dt,
-            priority = pri,
-            body = self.body,
-            host = host,
-            nanos = ns,
-            fields = fields
-        )
+        self.event = ThriftFlumeOGEvent(timestamp=dt,
+                                        priority=pri,
+                                        body=self.body,
+                                        host=host,
+                                        nanos=ns,
+                                        fields=fields)
 
     def emit(self, record):
         try:
@@ -71,8 +69,7 @@ class FlumeHandler(logging.Handler):
                     self.body = ""
                 headers.update(msg)
 
-            event = { 'ng': self.event_ng,
-                      'og': self.event_og }
+            event = {'ng': self.event_ng, 'og': self.event_og}
             headers['pri'] = record.levelname.upper()
             try:
                 event[self.type](headers)
