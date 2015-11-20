@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-from thrift import Thrift
 from thrift.transport import TTransport
 from thrift.transport import TSocket
 from thrift.protocol import TCompactProtocol, TBinaryProtocol
 from flumelogger.flumeng import ThriftSourceProtocol
 from flumelogger.flumeog import ThriftFlumeEventServer
+
 
 class FlumeEventServer(object):
     def __init__(self, host="localhost", port=9090, type='ng'):
