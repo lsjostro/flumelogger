@@ -20,20 +20,23 @@ class FlumeHandler(logging.Handler):
         # run the regular Handler __init__
         logging.Handler.__init__(self)
 
+        # default header detection
+        if 'host' not in headers:
+            headers['host'] = socket.gethostname()
+
         self.host = host
         self.port = port
         self.type = type
         self.headers = headers
         self.eventserver = FlumeEventServer(host=self.host, port=self.port, type=self.type)
 
-    def event_ng(self):
+    def event_ng(self, headers):
         self.event = ThriftFlumeNGEvent(
-            headers = self.headers,
+            headers = headers,
             body = self.body
         )
 
-    def event_og(self):
-        fields = self.headers.copy()
+    def event_og(self, fields):
         pri = PRIORITY[fields['pri']]
         dt = int(time.time() * 1000)
         ns = datetime.now().microsecond * 1000
@@ -59,22 +62,20 @@ class FlumeHandler(logging.Handler):
             except:
                 msg = None
 
+            headers = self.headers.copy()
             if isinstance(msg, dict):
-                if msg.has_key('message'):
+                if 'message' in msg:
                     self.body = msg['message']
                     del msg['message']
                 else:
                     self.body = ""
-                self.headers = msg
-
-            if not self.headers.has_key('host'):
-                self.headers['host'] = socket.gethostname()
-            self.headers['pri'] = record.levelname.upper()
+                headers.update(msg)
 
             event = { 'ng': self.event_ng,
                       'og': self.event_og }
+            headers['pri'] = record.levelname.upper()
             try:
-                event[self.type]()
+                event[self.type](headers)
             except KeyError:
                 raise Exception('Wrong flume type specified')
 
