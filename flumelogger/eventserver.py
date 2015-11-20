@@ -35,6 +35,6 @@ class FlumeEventServer(object):
 
             self.client.append(event)
         except Exception, tx:
-            print 'Thrift: %s' % tx
             self.client = None
             self.transport.close()
+            raise Exception('Thrift: %s' % tx)
