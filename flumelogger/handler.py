@@ -115,5 +115,12 @@ class FlumeHandler(logging.Handler):
             self.eventserver.append_batch(events)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except Exception as err:
+            record = logging.LogRecord(name=records.name,
+                                       level=records.levelno,
+                                       pathname=records.pathname,
+                                       lineno=records.lineno,
+                                       msg=err,
+                                       args=records.args,
+                                       exc_info=records.exc_info)
             self.handleError(record)
