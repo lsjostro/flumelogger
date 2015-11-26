@@ -23,3 +23,18 @@ Python library for sending log events to flume. Support both FlumeNG and FlumeOG
 >>>
 ```
 
+### Advanced Usage
+
+## Multiple hosts
+
+```
+>>> host = 'agent1.example.com,agent2.example.com'
+>>> [...]
+```
+
+## Force reconnect
+
+```
+>>> [...]
+>>> fh.eventserver.reconnect()
+```

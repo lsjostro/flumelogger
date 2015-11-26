@@ -1,8 +1,13 @@
-import socket
-import logging
-import time
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import ast
+import logging
+import socket
+import time
+
 from datetime import datetime
+
 from flumelogger.eventserver import FlumeEventServer
 from flumelogger.flumeng.ttypes import ThriftFlumeEvent as ThriftFlumeNGEvent
 from flumelogger.flumeog.ttypes import ThriftFlumeEvent as ThriftFlumeOGEvent
@@ -17,7 +22,8 @@ PRIORITY = {"FATAL": 0,
 
 
 class FlumeHandler(logging.Handler):
-    def __init__(self, host="localhost", port=9090, type='ng', headers={}):
+    def __init__(self, host="localhost", port=9090, timeout=1000, type='ng',
+                 reuse=True, debug=False, headers=None):
         # run the regular Handler __init__
         logging.Handler.__init__(self)
 
@@ -27,11 +33,17 @@ class FlumeHandler(logging.Handler):
 
         self.host = host
         self.port = port
+        self.timeout = timeout
         self.type = type
-        self.headers = headers
+        self.reuse = reuse
+        self.debug = debug
+        self.headers = headers or {}
         self.eventserver = FlumeEventServer(host=self.host,
                                             port=self.port,
-                                            type=self.type)
+                                            timeout=self.timeout,
+                                            type=self.type,
+                                            reuse=self.reuse,
+                                            debug=self.debug)
 
     def event_ng(self, body, headers):
         return ThriftFlumeNGEvent(headers=headers, body=body)
@@ -57,7 +69,7 @@ class FlumeHandler(logging.Handler):
         headers = self.headers.copy()
         try:
             msg = ast.literal_eval(body)
-        except:
+        except Exception:
             msg = None
         if isinstance(msg, dict):
             if 'message' in msg:
@@ -85,10 +97,12 @@ class FlumeHandler(logging.Handler):
                 raise Exception('Wrong flume type specified')
 
             # send event
-            self.eventserver.append(tevent)
+            with self.eventserver as client:
+                self.eventserver.append(tevent, client)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except Exception as e:
+            record.msg = e
             self.handleError(record)
 
     def emit_many(self, records):
@@ -112,15 +126,16 @@ class FlumeHandler(logging.Handler):
                     events.append(tevent)
 
             # send events
-            self.eventserver.append_batch(events)
+            with self.eventserver as client:
+                self.eventserver.append_batch(events, client)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception as err:
+        except Exception as e:
             record = logging.LogRecord(name=records.name,
                                        level=records.levelno,
                                        pathname=records.pathname,
                                        lineno=records.lineno,
-                                       msg=err,
+                                       msg=e,
                                        args=records.args,
                                        exc_info=records.exc_info)
             self.handleError(record)
