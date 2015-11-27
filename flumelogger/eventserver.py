@@ -40,7 +40,6 @@ class FlumeEventServer(object):
         self.debug = debug
 
         # NOTE: parse the host URI.
-        self.active_nodes = set()
         for entity in self.host:
             self.default_nodes = split_hosts(entity, self.port)
             log_debug("nodes available {}".format(self.default_nodes), debug=self.debug)
@@ -114,7 +113,8 @@ class FlumeEventServer(object):
         """
         log_debug("add {} to the active nodes".format(node), debug=self.debug)
         self.open_connections[node] = {'client': client, 'transport': transport}
-        self.active_nodes.append(node)
+        if node not in self.active_nodes:
+            self.active_nodes.append(node)
         self.cycle_nodes = cycle(self.active_nodes)
 
     def __enter__(self):
