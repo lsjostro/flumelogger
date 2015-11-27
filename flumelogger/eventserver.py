@@ -49,8 +49,7 @@ class FlumeEventServer(object):
             raise ConfigurationError("need to specify at least one host")
 
         # NOTE: init stuff to manage the pool.
-        self.first_cycle = True
-        self.active_nodes = self.default_nodes
+        self.active_nodes = [node for node in self.default_nodes]
         self.cycle_nodes = cycle(self.active_nodes)
         self.open_connections = {}
 
@@ -101,8 +100,6 @@ class FlumeEventServer(object):
         Args:
             host (str): Hostname/port combo.
         """
-        if self.first_cycle:
-            return
         log_debug("remove {} from the active nodes".format(node), debug=self.debug)
         self.open_connections.pop(node, None)
         if node in self.active_nodes:
@@ -115,7 +112,6 @@ class FlumeEventServer(object):
         Args:
             host (str): Hostname/port combo.
         """
-        self.first_cycle = False
         log_debug("add {} to the active nodes".format(node), debug=self.debug)
         self.open_connections[node] = {'client': client, 'transport': transport}
         self.active_nodes.append(node)

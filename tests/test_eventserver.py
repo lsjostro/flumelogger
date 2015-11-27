@@ -46,5 +46,37 @@ class TestEventServerParsing(unittest.TestCase):
         eventserver = FlumeEventServer(host=['agent1:7777'])
         self.assertEqual(eventserver.active_nodes, [('agent1', 7777)])
 
+
+class TestEventServer(unittest.TestCase):
+
+    def test_connect_failed(self):
+        """ Ensure ServerSelectionError is raise when the application start
+            and no nodes is available.
+
+            Fix:
+                2015-11-27: the default_cycle variable block the exception.
+        """
+        from flumelogger.eventserver import FlumeEventServer
+        from flumelogger.errors import ServerSelectionError
+
+        eventserver = FlumeEventServer(host='localhost:7777')
+        with self.assertRaises(ServerSelectionError):
+            with eventserver as client:
+                pass
+
+    def test_autoreconnect_failed(self):
+        """ Ensure the default_nodes keep safe when we remove a node.
+
+            Fix:
+                2015-11-27: the default and active nodes variable was link (memory ref).
+        """
+        from flumelogger.eventserver import FlumeEventServer
+        from flumelogger.errors import ServerSelectionError
+
+        eventserver = FlumeEventServer(host='localhost:7777')
+        eventserver._remove_node(node=('localhost', 7777))
+        self.assertListEqual([('localhost', 7777)], eventserver.default_nodes)
+
+
 if __name__ == '__main__':
     unittest.main()
