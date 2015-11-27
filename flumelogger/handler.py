@@ -44,6 +44,7 @@ class FlumeHandler(logging.Handler):
                                             type=self.type,
                                             reuse=self.reuse,
                                             debug=self.debug)
+        self.reconnect = self.eventserver.reconnect
 
     def event_ng(self, body, headers):
         return ThriftFlumeNGEvent(headers=headers, body=body)
