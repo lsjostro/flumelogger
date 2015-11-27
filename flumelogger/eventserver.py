@@ -161,7 +161,6 @@ class FlumeEventServer(object):
                     self._add_node(node=node, client=client, transport=transport)
             except ConnectionFailure as e:
                 log_debug('failed to reconnect to {}'.format(node), debug=self.debug)
-                continue
 
     def append(self, event, client):
         try:
