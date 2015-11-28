@@ -77,6 +77,19 @@ class TestEventServer(unittest.TestCase):
         eventserver._remove_node(node=('localhost', 7777))
         self.assertListEqual([('localhost', 7777)], eventserver.default_nodes)
 
+    def test_active_nodes_unicity(self):
+        """ Ensure the nodes unicity in the actives nodes list.
+
+            Fix:
+                2015-11-27: we use a list and we don't check the presence of the same node into the list.
+        """
+        from flumelogger.eventserver import FlumeEventServer
+        from flumelogger.errors import ServerSelectionError
+
+        eventserver = FlumeEventServer(host='localhost:7777,localhost:8888')
+        eventserver._remove_node(node=('localhost', 7777))
+        self.assertEqual([('localhost', 8888)], eventserver.active_nodes)
+
 
 if __name__ == '__main__':
     unittest.main()

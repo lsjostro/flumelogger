@@ -36,5 +36,5 @@ Python library for sending log events to flume. Support both FlumeNG and FlumeOG
 
 ```
 >>> [...]
->>> fh.eventserver.reconnect()
+>>> fh.reconnect()
 ```
