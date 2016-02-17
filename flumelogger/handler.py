@@ -23,7 +23,7 @@ PRIORITY = {"FATAL": 0,
 
 class FlumeHandler(logging.Handler):
     def __init__(self, host="localhost", port=9090, timeout=1000, type='ng',
-                 reuse=True, debug=False, headers=None):
+                 reuse=True, debug=False, headers={}):
         # run the regular Handler __init__
         logging.Handler.__init__(self)
 
@@ -37,7 +37,7 @@ class FlumeHandler(logging.Handler):
         self.type = type
         self.reuse = reuse
         self.debug = debug
-        self.headers = headers or {}
+        self.headers = headers
         self.eventserver = FlumeEventServer(host=self.host,
                                             port=self.port,
                                             timeout=self.timeout,
