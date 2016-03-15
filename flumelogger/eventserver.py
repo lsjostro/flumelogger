@@ -42,7 +42,7 @@ class FlumeEventServer(object):
         # NOTE: parse the host URI.
         for entity in self.host:
             self.default_nodes = split_hosts(entity, self.port)
-            log_debug("nodes available {}".format(self.default_nodes), debug=self.debug)
+            log_debug("nodes available {0}".format(self.default_nodes), debug=self.debug)
 
         if not self.default_nodes:
             raise ConfigurationError("need to specify at least one host")
@@ -99,7 +99,7 @@ class FlumeEventServer(object):
         Args:
             host (str): Hostname/port combo.
         """
-        log_debug("remove {} from the active nodes".format(node), debug=self.debug)
+        log_debug("remove {0} from the active nodes".format(node), debug=self.debug)
         self.open_connections.pop(node, None)
         if node in self.active_nodes:
             self.active_nodes.remove(node)
@@ -111,7 +111,7 @@ class FlumeEventServer(object):
         Args:
             host (str): Hostname/port combo.
         """
-        log_debug("add {} to the active nodes".format(node), debug=self.debug)
+        log_debug("add {0} to the active nodes".format(node), debug=self.debug)
         self.open_connections[node] = {'client': client, 'transport': transport}
         if node not in self.active_nodes:
             self.active_nodes.append(node)
@@ -132,13 +132,13 @@ class FlumeEventServer(object):
                     # NOTE: try to re-use a connection.
                     self.current_node = node
                     if self.reuse and self._is_connected(node=self.current_node):
-                        log_debug('re-using connection to {}'.format(self.current_node), debug=self.debug)
+                        log_debug('re-using connection to {0}'.format(self.current_node), debug=self.debug)
                         return self.open_connections[self.current_node]['client']
 
                     # NOTE: new connection.
                     self.client, self.transport = self._connect(*self.current_node)
                     self._add_node(node=self.current_node, client=self.client, transport=self.transport)
-                    log_debug('opened new connection to {}'.format(self.current_node), debug=self.debug)
+                    log_debug('opened new connection to {0}'.format(self.current_node), debug=self.debug)
                 except ConnectionFailure as e:
                     self._remove_node(node=self.current_node)
         except StopIteration:
@@ -156,11 +156,11 @@ class FlumeEventServer(object):
         for node in self.default_nodes:
             try:
                 if node not in self.active_nodes:
-                    log_debug('reconnecting to {}'.format(node), debug=self.debug)
+                    log_debug('reconnecting to {0}'.format(node), debug=self.debug)
                     client, transport = self._connect(*node)
                     self._add_node(node=node, client=client, transport=transport)
             except ConnectionFailure as e:
-                log_debug('failed to reconnect to {}'.format(node), debug=self.debug)
+                log_debug('failed to reconnect to {0}'.format(node), debug=self.debug)
 
     def append(self, event, client):
         try:
