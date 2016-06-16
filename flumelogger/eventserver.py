@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from itertools import cycle
+from copy import copy
+from random import shuffle
 
 from thrift.protocol import TCompactProtocol, TBinaryProtocol
 from thrift.transport import TSocket
@@ -49,7 +50,6 @@ class FlumeEventServer(object):
 
         # NOTE: init stuff to manage the pool.
         self.active_nodes = [node for node in self.default_nodes]
-        self.cycle_nodes = cycle(self.active_nodes)
         self.open_connections = {}
 
     def _connect(self, host, port):
@@ -103,7 +103,6 @@ class FlumeEventServer(object):
         self.open_connections.pop(node, None)
         if node in self.active_nodes:
             self.active_nodes.remove(node)
-        self.cycle_nodes = cycle(self.active_nodes)
 
     def _add_node(self, node, client, transport):
         """ Add a node to the active nodes pool.
@@ -115,7 +114,6 @@ class FlumeEventServer(object):
         self.open_connections[node] = {'client': client, 'transport': transport}
         if node not in self.active_nodes:
             self.active_nodes.append(node)
-        self.cycle_nodes = cycle(self.active_nodes)
 
     def __enter__(self):
         """ Connect to an active node.
@@ -124,7 +122,8 @@ class FlumeEventServer(object):
             if not self.active_nodes:
                 raise StopIteration
 
-            for node in self.cycle_nodes:
+            shuffle(self.active_nodes)
+            for node in copy(self.active_nodes):
                 try:
                     if not self.active_nodes:
                         raise StopIteration
@@ -141,6 +140,8 @@ class FlumeEventServer(object):
                     log_debug('opened new connection to {0}'.format(self.current_node), debug=self.debug)
                 except ConnectionFailure as e:
                     self._remove_node(node=self.current_node)
+                else:
+                    return self.client
         except StopIteration:
             raise ServerSelectionError("no server available")
 
