@@ -102,7 +102,9 @@ class FlumeHandler(logging.Handler):
 
             # send event
             with self.eventserver as client:
-                self.eventserver.append(tevent, client)
+                result = self.eventserver.append(tevent, client)
+                if result != 0:
+                    raise Exception('Thrift error {}'.format(result))
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
@@ -131,7 +133,9 @@ class FlumeHandler(logging.Handler):
 
             # send events
             with self.eventserver as client:
-                self.eventserver.append_batch(events, client)
+                result = self.eventserver.append_batch(events, client)
+                if result != 0:
+                    raise Exception('Thrift error {}'.format(result))
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:

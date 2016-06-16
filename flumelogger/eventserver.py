@@ -165,14 +165,14 @@ class FlumeEventServer(object):
 
     def append(self, event, client):
         try:
-            client.append(event)
+            return client.append(event)
         except Exception as e:
             self._remove_node(node=self.current_node)
             raise OperationFailure(e)
 
     def append_batch(self, events, client):
         try:
-            client.appendBatch(events)
+            return client.appendBatch(events)
         except Exception as e:
             self._remove_node(node=self.current_node)
             raise OperationFailure(e)
