@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'flumelogger',
-    version = '0.4.2',
+    version = '0.4.3',
     description = 'Flume logging handler for sending log events to Flume',
     author = 'Lars Sjostrom',
     author_email = 'lars@radicore.se',
